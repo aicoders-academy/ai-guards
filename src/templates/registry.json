@@ -8,7 +8,7 @@
       "path": "code-review.md"
     },
     "code-generation": {
-      "id": "ç",
+      "id": "code-generation",
       "name": "Code Generation",
       "description": "A template for generating code with clear requirements and constraints",
       "category": "generation",
