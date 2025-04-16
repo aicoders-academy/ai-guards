@@ -1,5 +1,4 @@
-
-![ai guards](https://github.com/user-attachments/assets/419dba13-48b4-4a7e-98c7-6ab3fcbe1ff2)
+![make vibe coding great again](https://github.com/user-attachments/assets/290b80c9-addf-48ec-8e53-7690f0edb02b)
 
 # AI Guards for vibe coding
 
