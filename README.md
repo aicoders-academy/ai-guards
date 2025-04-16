@@ -1,4 +1,53 @@
-### **AI Guards**  
+# AI Guards
+
+Standardize how teams **plan, review, execute, and verify** AI‑assisted code—without locking them into a single IDE or toolchain.
+
+## Installation
+
+### Global Installation
+```bash
+npm install -g ai-guards
+```
+
+### Quick Start
+Initialize a new project with AI Guards in less than 30 seconds:
+```bash
+npx ai-guards-init
+```
+
+## Usage
+
+### Commands
+
+| Command         | Description                           | Usage                            |
+|-----------------|---------------------------------------|----------------------------------|
+| `init`          | Initialize AI Guards in a project     | `ai-guards init`                 |
+| `plan`          | Generate a new plan                   | `ai-guards plan [-t title] [-a author]` |
+
+## Directory Layout
+```text
+.ai-guards/
+├── rules/              # Current version
+│   ├── guidelines/     # Org‑wide coding style and guidelines
+│   ├── security/       # Security rules
+│   └── general/        # General rules
+|── templates/          # Reusable prompt & rule snippets (.test.mdc, .component.mdc, etc)
+└── plans/              # Prompt → result → human rating
+```
+
+## Rule Types
+
+| Rule Type         | Description                                                                                   |
+|-------------------|----------------------------------------------------------------------------------------------|
+| **Always**        | Always included in the model context.                                                        |
+| **Auto Attached** | Included when files matching a glob pattern are referenced.                                  |
+| **Agent Requested** | Rule is available to the AI, which decides whether to include it. Must provide a description. |
+| **Manual**        | Only included when explicitly mentioned using `@ruleName`.                                   |
+
+For more details about the AI Guards workflow and concepts, refer to the [detailed documentation](https://github.com/your-repo/ai-guards).
+
+## License
+ISC
 
 ---
 
@@ -163,17 +212,4 @@ Implement login, logout, and session validation endpoints using JWT.
 
 | Command            | Action |
 |--------------------|--------|
-| `plan`             | Generate a plan, store in `plans/` |
-
-Install/boot‑strap in **< 30 s**:  
-```bash
-npx ai-guards-init         # scaffolds .ai-guards/
-```
-
----
-
-***Outcome:***
-A modular, secure, and repeatable AI dev pipeline—plug-and-play for any repo, any language, any IDE.
-
-Let me know if you'd like a visual version or one tailored for onboarding docs.
-
+| `plan`
