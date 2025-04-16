@@ -1,0 +1,24 @@
+#!/usr/bin/env node
+
+const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
+
+console.log('Initializing AI Guards in your project...');
+
+// Check if package.json exists
+if (!fs.existsSync(path.join(process.cwd(), 'package.json'))) {
+  console.log('Creating package.json...');
+  execSync('npm init -y', { stdio: 'inherit' });
+}
+
+// Install ai-guards as a dev dependency
+console.log('Installing ai-guards...');
+execSync('npm install ai-guards --save-dev', { stdio: 'inherit' });
+
+// Run the init command
+console.log('Setting up AI Guards directory structure...');
+execSync('npx ai-guards init', { stdio: 'inherit' });
+
+console.log('AI Guards initialized successfully!');
+console.log('Run "npx ai-guards" to see available commands.'); 
