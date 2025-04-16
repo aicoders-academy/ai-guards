@@ -12,7 +12,8 @@
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
     "init": "ts-node src/index.ts init",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "test:coverage": "jest --coverage"
   },
   "keywords": [
     "ai",
@@ -36,6 +37,9 @@
     "typescript": "^5.8.3"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2"
   }
 }

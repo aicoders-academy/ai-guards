@@ -81,12 +81,38 @@ yourCommand(program);
 
 ## Testing
 
-Before submitting changes, test your code:
+All new features and fixes should include tests. We use Jest for testing and ts-jest for TypeScript support.
+
+### Test Structure
+
+Tests are organized in the `src/__tests__/` directory, mirroring the structure of the source files they test.
+
+### Writing Tests
+
+1. Create test files with a `.test.ts` extension
+2. Use proper mocking to isolate the component being tested
+3. Test both successful and error paths
+4. Aim to maintain high code coverage (currently ~98% line coverage)
+
+### Running Tests
 
 ```bash
-npm run build
-ai-guards <your-command>  # Test your command
+npm test
 ```
+
+To run a specific test file:
+
+```bash
+npm test -- src/__tests__/path/to/test.test.ts
+```
+
+To check code coverage:
+
+```bash
+npm run test:coverage
+```
+
+This will generate coverage reports in the `coverage/` directory.
 
 ## Submitting Changes
 

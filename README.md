@@ -213,3 +213,63 @@ Implement login, logout, and session validation endpoints using JWT.
 | Command            | Action |
 |--------------------|--------|
 | `plan`
+```
+
+## Testing
+
+AI Guards includes a comprehensive test suite using Jest. The tests cover utility functions, commands, and the main CLI functionality.
+
+### Running Tests
+
+To run the test suite:
+
+```bash
+npm test
+```
+
+To run tests with coverage reporting:
+
+```bash
+npm run test:coverage
+```
+
+Current code coverage:
+- Statements: ~98%
+- Branches: ~72%
+- Functions: ~85%
+- Lines: ~98%
+
+### Test Structure
+
+- `src/__tests__/` - Contains all test files
+  - `utils/` - Tests for utility functions
+  - `commands/` - Tests for CLI commands
+  - `index.test.ts` - Tests for the main CLI entry point
+
+### Writing Tests
+
+When adding new features, please include tests. The project uses ts-jest for TypeScript support. Mock dependencies appropriately to ensure isolated testing.
+
+Example:
+
+```typescript
+// Mock dependencies
+jest.mock('fs-extra', () => ({
+  ensureDir: jest.fn(),
+  writeFile: jest.fn()
+}));
+
+// Import mocked modules after mocking
+const fs = require('fs-extra');
+
+describe('myFeature', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should do something expected', () => {
+    // Test implementation
+    expect(result).toBe(expectedValue);
+  });
+});
+```
