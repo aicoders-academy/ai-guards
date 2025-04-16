@@ -1,4 +1,6 @@
-# AI Guards
+![make vibe coding great again](https://github.com/user-attachments/assets/290b80c9-addf-48ec-8e53-7690f0edb02b)
+
+# AI Guards for vibe coding
 
 Standardize how teams **plan, review, execute, and verify** AI‑assisted code—without locking them into a single IDE or toolchain.
 
