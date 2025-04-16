@@ -50,7 +50,7 @@ npx ai-guards init
 For more details about the AI Guards workflow and concepts, refer to the [detailed documentation](https://github.com/your-repo/ai-guards).
 
 ## License
-ISC
+MIT
 
 ---
 

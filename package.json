@@ -22,8 +22,8 @@
     "standards",
     "workflow"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Vinicius Lana",
+  "license": "MIT",
   "dependencies": {
     "@types/fs-extra": "^11.0.4",
     "@types/glob": "^8.1.0",
