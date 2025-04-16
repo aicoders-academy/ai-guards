@@ -1,0 +1,13 @@
+{
+  "templates": {
+    "code-generation": {
+      "id": "code-generation",
+      "name": "Code Generation",
+      "description": "A template for generating code with clear requirements and constraints",
+      "category": "generation",
+      "path": "code-generation.md",
+      "installedAt": "2025-04-16T03:27:25.867Z",
+      "customized": false
+    }
+  }
+}

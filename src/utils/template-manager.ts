@@ -90,7 +90,7 @@ export async function saveTemplatesConfig(config: TemplateConfig): Promise<void>
  * Load the template registry
  */
 export async function loadTemplateRegistry(): Promise<TemplateRegistry> {
-  const registryPath = path.join(__dirname, '../templates/registry.json');
+  const registryPath = path.join(__dirname, '..', 'templates', 'registry.json');
   
   try {
     const registry = await fs.readJson(registryPath);

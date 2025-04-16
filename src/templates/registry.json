@@ -8,7 +8,7 @@
       "path": "code-review.md"
     },
     "code-generation": {
-      "id": "code-generation",
+      "id": "ç",
       "name": "Code Generation",
       "description": "A template for generating code with clear requirements and constraints",
       "category": "generation",
@@ -20,13 +20,6 @@
       "description": "A template for generating comprehensive documentation for code",
       "category": "documentation",
       "path": "documentation.md"
-    },
-    "testing": {
-      "id": "testing",
-      "name": "Test Generation",
-      "description": "A template for generating thorough test cases for code",
-      "category": "testing",
-      "path": "testing.md"
     }
   },
   "categories": {
@@ -41,10 +34,6 @@
     "documentation": {
       "name": "Documentation",
       "description": "Templates for generating documentation"
-    },
-    "testing": {
-      "name": "Testing",
-      "description": "Templates for generating test cases and testing strategies"
     }
   }
 } 

@@ -13,7 +13,7 @@ import {
 export const errorHandler = (error: Error): never => {
   console.error(chalk.red('Error initializing AI Guards:'), error);
   // Check if we're in test mode
-  if (global.__TEST__) {
+  if (typeof (global as any).__TEST__ !== 'undefined' && (global as any).__TEST__) {
     // In test mode, throw an error instead of exiting
     throw new Error(`Error initializing AI Guards: ${error.message}`);
   }
