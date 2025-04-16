@@ -21,8 +21,9 @@ npx ai-guards-init
 
 | Command         | Description                           | Usage                            |
 |-----------------|---------------------------------------|----------------------------------|
-| `init`          | Initialize AI Guards in a project     | `ai-guards init`                 |
-| `plan`          | Generate a new plan                   | `ai-guards plan [-t title] [-a author]` |
+| `init`          | Initialize AI Guards in a project     | `ai-guards init [--templates] [--no-templates] [--select-templates]` |
+| `plan`          | Generate a new plan template          | `ai-guards plan [-t title] [-a author]` |
+| `add`           | Add a prompt template to your project | `ai-guards add [template-id]` or `ai-guards add --list` |
 
 ## Directory Layout
 ```text
@@ -31,7 +32,7 @@ npx ai-guards-init
 │   ├── guidelines/     # Org‑wide coding style and guidelines
 │   ├── security/       # Security rules
 │   └── general/        # General rules
-|── templates/          # Reusable prompt & rule snippets (.test.mdc, .component.mdc, etc)
+|── templates/          # Reusable prompt & rule snippets (.test.md, .component.md, etc)
 └── plans/              # Prompt → result → human rating
 ```
 
@@ -88,7 +89,7 @@ Standardize how teams **plan, review, execute, and verify** AI‑assisted code�
 │   ├── guidelines/     # Org‑wide coding style and guidelines
 │   ├── security/       # Security rules
 │   └── general/        # General rules
-|── templates/          # Reusable prompt & rule snippets (.test.mdc, .component.mdc, etc)
+|── templates/          # Reusable prompt & rule snippets (.test.md, .component.md, etc)
 └── plans/              # Prompt → result → human rating
 ```
 
@@ -106,7 +107,7 @@ Standardize how teams **plan, review, execute, and verify** AI‑assisted code�
 
 Rule example
 
-```mdc
+```md
 ---
 
 description: RPC Service boilerplate
@@ -125,47 +126,89 @@ alwaysApply: false
 
 #### 5. Templates
 
-Template example
+AI Guards provides a collection of prompt templates for common AI assistance scenarios. You can initialize your project with all templates, select specific ones during initialization, or add them later.
 
-```mdc
----
+### Managing Templates
 
-description: Reusable unit test template for components
-type: auto
-appliesTo: *.component.tsx
----
+```bash
+# Initialize with all templates
+ai-guards init --templates
 
-## 🧪 Unit Test Template
+# Initialize with selected templates
+ai-guards init --select-templates
 
-Write tests using the project's test framework (e.g., Jest, Vitest).
+# Skip template initialization
+ai-guards init --no-templates
 
-**Checklist:**
-- Cover all public functions and edge cases  
-- Use mocks for external calls  
-- Ensure ≥85% test coverage  
+# List available templates
+ai-guards add --list
 
-```ts
-describe('<ComponentName>', () => {
-  it('should <expected behavior>', () => {
-    // test logic here
-  });
-});
+# Add a specific template
+ai-guards add code-review
+
+# Interactive template selection
+ai-guards add
 ```
+
+### Available Template Categories
+
+- **Code Review** - Templates for reviewing and analyzing code
+- **Code Generation** - Templates for generating new code
+- **Documentation** - Templates for generating documentation
+- **Testing** - Templates for generating test cases and testing strategies
+
+### Template Structure
+
+Each template follows a consistent format with metadata and prompt content:
+
+```md
+---
+id: template-id
+name: Template Name
+description: Template description
+category: template-category
+---
+
+# Template Content
+
+Your template content goes here...
+```
+
+You can customize templates after installation by editing the files in the `.ai-guards/templates/` directory.
 
 ---
 
 
 #### 6. Plans
 
-Plan example
+AI Guards generates plan templates that you can edit to define your project specifications.
 
-```mdc
+### Creating a Plan
+
+```bash
+# Generate a plan template with default title and author
+ai-guards plan
+
+# Generate a plan with a custom title
+ai-guards plan -t "Add user authentication"
+
+# Generate a plan with custom title and author
+ai-guards plan -t "Add user authentication" -a "Your Name"
+```
+
+This will create a `.md` file in the `.ai-guards/plans/` directory that you can edit with your text editor.
+
+### Plan Structure
+
+Plan example:
+
+```md
 ---
 id: plan-001
 title: Add user authentication to API
 createdAt: 2025-04-15
 author: ai-guards
-status: in-progress
+status: draft
 ---
 
 ## 🧩 Scope

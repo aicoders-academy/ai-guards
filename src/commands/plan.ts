@@ -1,14 +1,13 @@
 import { Command } from 'commander';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import inquirer from 'inquirer';
 import chalk from 'chalk';
 import { generatePlanId } from '../utils/idGenerator';
 
 export default function planCommand(program: Command): void {
   program
     .command('plan')
-    .description('Generate a new AI plan')
+    .description('Generate a new AI plan template')
     .option('-t, --title <title>', 'Title for the plan')
     .option('-a, --author <author>', 'Author of the plan')
     .action(async (options) => {
@@ -19,129 +18,68 @@ export default function planCommand(program: Command): void {
         // Ensure plans directory exists
         await fs.ensureDir(plansDir);
         
-        // Prompt for missing information
-        const answers = await inquirer.prompt([
-          {
-            type: 'input',
-            name: 'title',
-            message: 'Title for the plan:',
-            when: !options.title,
-            validate: (input: string) => input.length > 0 ? true : 'Title is required'
-          },
-          {
-            type: 'input',
-            name: 'author',
-            message: 'Author of the plan:',
-            when: !options.author,
-            default: 'ai-guards'
-          },
-          {
-            type: 'input',
-            name: 'scope',
-            message: 'Scope of the plan:',
-            validate: (input: string) => input.length > 0 ? true : 'Scope is required'
-          },
-          {
-            type: 'editor',
-            name: 'functionalReqs',
-            message: 'Functional requirements (one per line):',
-          },
-          {
-            type: 'editor',
-            name: 'nonFunctionalReqs',
-            message: 'Non-functional requirements (one per line):',
-          },
-          {
-            type: 'input',
-            name: 'guidelines',
-            message: 'Guidelines & packages (comma separated):',
-          },
-          {
-            type: 'editor',
-            name: 'threatModel',
-            message: 'Threat model stub (one per line):',
-          },
-          {
-            type: 'editor',
-            name: 'executionPlan',
-            message: 'Execution plan steps (one per line):',
-          }
-        ]);
-        
-        // Combine options and answers
-        const planData = {
-          title: options.title || answers.title,
-          author: options.author || answers.author,
-          scope: answers.scope,
-          functionalReqs: answers.functionalReqs,
-          nonFunctionalReqs: answers.nonFunctionalReqs,
-          guidelines: answers.guidelines,
-          threatModel: answers.threatModel,
-          executionPlan: answers.executionPlan
-        };
+        // Use options or defaults
+        const title = options.title || 'Your Plan Title';
+        const author = options.author || 'ai-guards';
         
         // Generate plan ID and date
         const planId = generatePlanId();
         const createdAt = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
         
-        // Format function for requirements and steps
-        const formatLines = (text: string): string => {
-          return text
-            .split('\n')
-            .filter((line: string) => line.trim().length > 0)
-            .map((line: string) => `- ${line.trim().startsWith('-') ? line.trim().substring(1).trim() : line.trim()}`)
-            .join('  \n');
-        };
-        
-        // Create plan content
+        // Create plan template content
         const planContent = `---
 id: ${planId}
-title: ${planData.title}
+title: ${title}
 createdAt: ${createdAt}
-author: ${planData.author}
-status: in-progress
+author: ${author}
+status: draft
 ---
 
 ## 🧩 Scope
 
-${planData.scope}
+Your project scope description here...
 
 ## ✅ Functional Requirements
 
-${formatLines(planData.functionalReqs)}
+- Requirement 1
+- Requirement 2
+- Requirement 3
 
 ## ⚙️ Non-Functional Requirements
 
-${formatLines(planData.nonFunctionalReqs)}
+- Performance: specify requirements
+- Security: specify requirements 
+- Scalability: specify requirements
 
 ## 📚 Guidelines & Packages
 
-${formatLines(planData.guidelines)}
+- Follow project guidelines: specify which ones
+- Packages to use: list them here with license
 
 ## 🔐 Threat Model (Stub)
 
-${formatLines(planData.threatModel)}
+- Security threat 1
+- Security threat 2
 
 ## 🔢 Execution Plan
 
-${planData.executionPlan
-  .split('\n')
-  .filter((line: string) => line.trim().length > 0)
-  .map((line: string, index: number) => `${index + 1}. ${line.trim().replace(/^\d+\.?\s*/, '')}`)
-  .join('  \n')}
+1. First implementation step
+2. Second implementation step
+3. Third implementation step
 `;
         
         // Save plan to file
-        const planFilename = `${planId}-${planData.title.toLowerCase().replace(/\s+/g, '-')}.mdc`;
+        const planFilename = `${planId}-${title.toLowerCase().replace(/\s+/g, '-')}.md`;
         const planFilePath = path.join(plansDir, planFilename);
         
         await fs.writeFile(planFilePath, planContent);
         
-        console.log(chalk.green(`Plan created successfully: ${planFilename}`));
+        console.log(chalk.green(`Plan template created successfully: ${planFilename}`));
         console.log(chalk.blue(`Plan ID: ${planId}`));
         console.log(chalk.blue(`Saved to: ${planFilePath}`));
+        console.log(chalk.yellow(`Edit the file to fill in your plan details`));
       } catch (error) {
-        console.error(chalk.red('Error generating plan:'), error);
+        console.error(chalk.red('Error generating plan template:'), error);
         process.exit(1);
       }
     });

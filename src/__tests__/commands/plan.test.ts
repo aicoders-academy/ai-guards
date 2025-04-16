@@ -14,14 +14,11 @@ jest.mock('path', () => ({
   join: jest.fn((...args) => args.join('/'))
 }));
 
-jest.mock('inquirer', () => ({
-  prompt: jest.fn()
-}));
-
 jest.mock('chalk', () => ({
   blue: jest.fn((text) => text),
   green: jest.fn((text) => text),
-  red: jest.fn((text) => text)
+  red: jest.fn((text) => text),
+  yellow: jest.fn((text) => text)
 }));
 
 jest.mock('../../utils/idGenerator', () => ({
@@ -30,7 +27,6 @@ jest.mock('../../utils/idGenerator', () => ({
 
 // Import mocked modules after mocking
 const fs = require('fs-extra');
-const inquirer = require('inquirer');
 const chalk = require('chalk');
 
 describe('planCommand', () => {
@@ -77,28 +73,16 @@ describe('planCommand', () => {
     planCommand(program);
     
     expect(program.command).toHaveBeenCalledWith('plan');
-    expect(program.description).toHaveBeenCalledWith('Generate a new AI plan');
+    expect(program.description).toHaveBeenCalledWith('Generate a new AI plan template');
     expect(program.option).toHaveBeenCalledWith('-t, --title <title>', 'Title for the plan');
     expect(program.option).toHaveBeenCalledWith('-a, --author <author>', 'Author of the plan');
     expect(program.action).toHaveBeenCalled();
   });
 
-  it('should create a plan file with user input when executed', async () => {
+  it('should create a plan template file with default values', async () => {
     // Set up fs-extra mocks
     fs.ensureDir.mockResolvedValue(undefined);
     fs.writeFile.mockResolvedValue(undefined);
-    
-    // Set up inquirer mock
-    inquirer.prompt.mockResolvedValue({
-      title: 'Test Plan',
-      author: 'Test Author',
-      scope: 'Test scope',
-      functionalReqs: 'Req 1\nReq 2',
-      nonFunctionalReqs: 'NFR 1\nNFR 2',
-      guidelines: 'Guideline 1, Guideline 2',
-      threatModel: 'Threat 1\nThreat 2',
-      executionPlan: 'Step 1\nStep 2'
-    });
     
     // Register command and execute action with empty options
     planCommand(program);
@@ -107,64 +91,56 @@ describe('planCommand', () => {
     // Verify directory creation
     expect(fs.ensureDir).toHaveBeenCalledWith('/fake/path/.ai-guards/plans');
     
-    // Verify inquirer prompt was called
-    expect(inquirer.prompt).toHaveBeenCalled();
-    
     // Verify generatePlanId was called
     expect(generatePlanId).toHaveBeenCalled();
     
     // Verify file creation
     expect(fs.writeFile).toHaveBeenCalledWith(
-      '/fake/path/.ai-guards/plans/plan-123-test-plan.mdc',
+      '/fake/path/.ai-guards/plans/plan-123-your-plan-title.md',
       expect.stringContaining('id: plan-123')
     );
     expect(fs.writeFile).toHaveBeenCalledWith(
-      '/fake/path/.ai-guards/plans/plan-123-test-plan.mdc',
-      expect.stringContaining('title: Test Plan')
+      '/fake/path/.ai-guards/plans/plan-123-your-plan-title.md',
+      expect.stringContaining('title: Your Plan Title')
     );
     expect(fs.writeFile).toHaveBeenCalledWith(
-      '/fake/path/.ai-guards/plans/plan-123-test-plan.mdc',
-      expect.stringContaining('createdAt: 2023-12-25')
+      '/fake/path/.ai-guards/plans/plan-123-your-plan-title.md',
+      expect.stringContaining('author: ai-guards')
+    );
+    expect(fs.writeFile).toHaveBeenCalledWith(
+      '/fake/path/.ai-guards/plans/plan-123-your-plan-title.md',
+      expect.stringContaining('status: draft')
+    );
+    expect(fs.writeFile).toHaveBeenCalledWith(
+      '/fake/path/.ai-guards/plans/plan-123-your-plan-title.md',
+      expect.stringContaining('## 🧩 Scope')
     );
     
     // Verify console output
-    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Plan created successfully'));
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Plan template created successfully'));
+    expect(console.log).toHaveBeenCalledWith(expect.stringContaining('Edit the file to fill in your plan details'));
   });
 
-  it('should use provided options instead of prompting', async () => {
+  it('should use provided options instead of defaults', async () => {
     // Set up fs-extra mocks
     fs.ensureDir.mockResolvedValue(undefined);
     fs.writeFile.mockResolvedValue(undefined);
     
-    // Set up inquirer mock for remaining fields
-    inquirer.prompt.mockResolvedValue({
-      scope: 'Test scope',
-      functionalReqs: 'Req 1\nReq 2',
-      nonFunctionalReqs: 'NFR 1\nNFR 2',
-      guidelines: 'Guideline 1, Guideline 2',
-      threatModel: 'Threat 1\nThreat 2',
-      executionPlan: 'Step 1\nStep 2'
-    });
-    
     // Register command and execute action with options
     planCommand(program);
     await actionCallback({
-      title: 'Command Line Title',
-      author: 'Command Line Author'
+      title: 'Custom Title',
+      author: 'Custom Author'
     });
     
-    // Verify inquirer prompt was called but not for title and author
-    expect(inquirer.prompt).toHaveBeenCalled();
-    
-    // Instead of checking the exact fields in the prompt, let's verify the final result
-    // This assumes the implementation correctly uses the provided values
+    // Verify file creation with custom options
     expect(fs.writeFile).toHaveBeenCalledWith(
-      '/fake/path/.ai-guards/plans/plan-123-command-line-title.mdc',
-      expect.stringContaining('title: Command Line Title')
+      '/fake/path/.ai-guards/plans/plan-123-custom-title.md',
+      expect.stringContaining('title: Custom Title')
     );
     expect(fs.writeFile).toHaveBeenCalledWith(
-      '/fake/path/.ai-guards/plans/plan-123-command-line-title.mdc',
-      expect.stringContaining('author: Command Line Author')
+      '/fake/path/.ai-guards/plans/plan-123-custom-title.md',
+      expect.stringContaining('author: Custom Author')
     );
   });
 
@@ -183,7 +159,7 @@ describe('planCommand', () => {
     
     // Verify error handling
     expect(console.error).toHaveBeenCalledWith(
-      expect.stringContaining('Error generating plan:'),
+      expect.stringContaining('Error generating plan template:'),
       testError
     );
     expect(process.exit).toHaveBeenCalledWith(1);

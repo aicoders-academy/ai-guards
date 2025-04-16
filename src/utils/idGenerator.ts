@@ -19,7 +19,7 @@ export function generatePlanId(): string {
   
   try {
     // Get existing plan files
-    const planFiles = glob.sync('*.mdc', { cwd: plansDir });
+    const planFiles = glob.sync('*.md', { cwd: plansDir });
     
     // Extract existing IDs
     const existingIds = new Set<number>();

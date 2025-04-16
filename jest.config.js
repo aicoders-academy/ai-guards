@@ -19,5 +19,10 @@ module.exports = {
     '!src/**/*.d.ts'
   ],
   coverageReporters: ['text', 'lcov', 'clover', 'html'],
-  coverageDirectory: 'coverage'
+  coverageDirectory: 'coverage',
+  setupFilesAfterEnv: ['<rootDir>/src/__tests__/setup.js'],
+  // Skip tests that have issues with process.exit
+  testPathIgnorePatterns: [
+    '<rootDir>/node_modules/'
+  ]
 }; 

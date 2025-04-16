@@ -44,7 +44,14 @@ ai-guards/
 └── tsconfig.json         # TypeScript configuration
 ```
 
-## Adding a New Command
+## Commands
+
+### Available Commands
+
+- `init`: Initializes AI Guards in a project
+- `plan`: Generates a plan template file to be edited by the user
+
+### Adding a New Command
 
 1. Create a new file in the `src/commands/` directory
 2. Implement the command using the Commander.js pattern
@@ -71,6 +78,15 @@ import yourCommand from './commands/your-command';
 // ...
 yourCommand(program);
 ```
+
+## Plan Templates
+
+Plans are generated as templates that users can edit with their text editor. When adding features related to plans:
+
+1. Maintain the structure with frontmatter metadata and markdown sections
+2. Ensure the template is helpful but not overly prescriptive
+3. Keep plan IDs unique using the `generatePlanId` utility
+4. Follow the standard plan sections (Scope, Requirements, etc.)
 
 ## Code Style
 

@@ -48,14 +48,14 @@ describe('idGenerator', () => {
     
     // Mock glob.sync to return existing plan files
     glob.sync.mockReturnValue([
-      'plan-001-test.mdc',
-      'plan-002-another.mdc'
+      'plan-001-test.md',
+      'plan-002-another.md'
     ]);
 
     const id = generatePlanId();
     
     expect(id).toBe('plan-003');
-    expect(glob.sync).toHaveBeenCalledWith('*.mdc', { cwd: '/fake/path/.ai-guards/plans' });
+    expect(glob.sync).toHaveBeenCalledWith('*.md', { cwd: '/fake/path/.ai-guards/plans' });
   });
 
   it('should handle non-sequential plan IDs', () => {
@@ -64,8 +64,8 @@ describe('idGenerator', () => {
     
     // Mock glob.sync to return existing plan files with gaps
     glob.sync.mockReturnValue([
-      'plan-001-test.mdc',
-      'plan-003-another.mdc'
+      'plan-001-test.md',
+      'plan-003-another.md'
     ]);
 
     const id = generatePlanId();
@@ -101,7 +101,7 @@ describe('idGenerator', () => {
     
     // Create an array of 999 plan files
     const planFiles = Array.from({ length: 999 }, (_, i) => 
-      `plan-${String(i + 1).padStart(3, '0')}-test.mdc`
+      `plan-${String(i + 1).padStart(3, '0')}-test.md`
     );
     
     // Mock glob.sync to return all possible plan files

@@ -1,0 +1,22 @@
+---
+description: Reusable unit test template for components
+type: auto
+appliesTo: *.component.tsx
+---
+
+## 🧪 Unit Test Template
+
+Write tests using the project's test framework (e.g., Jest, Vitest).
+
+**Checklist:**
+- Cover all public functions and edge cases  
+- Use mocks for external calls  
+- Ensure ≥85% test coverage  
+
+```ts
+describe('<ComponentName>', () => {
+  it('should <expected behavior>', () => {
+    // test logic here
+  });
+});
+```

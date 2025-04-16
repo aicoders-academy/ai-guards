@@ -3,6 +3,7 @@
 import { Command } from 'commander';
 import initCommand from './commands/init';
 import planCommand from './commands/plan';
+import addCommand from './commands/add';
 import { version } from '../package.json';
 
 // Create a new commander program
@@ -17,6 +18,7 @@ program
 // Register commands
 initCommand(program);
 planCommand(program);
+addCommand(program);
 
 // Parse command line arguments
 program.parse(process.argv);
