@@ -14,7 +14,7 @@ npm install -g ai-guards
 ### Quick Start
 Initialize a new project with AI Guards in less than 30 seconds:
 ```bash
-npx ai-guards-init
+npx ai-guards init
 ```
 
 ## Usage

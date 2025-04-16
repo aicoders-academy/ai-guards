@@ -1,5 +1,5 @@
 {
-  "name": "ai-guards-cli",
+  "name": "ai-guards",
   "version": "0.0.1",
   "description": "Standardize how teams plan, review, execute, and verify AI‑assisted code",
   "main": "dist/index.js",
