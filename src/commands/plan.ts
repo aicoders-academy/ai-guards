@@ -3,6 +3,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import chalk from 'chalk';
 import { generatePlanId } from '../utils/idGenerator';
+import { getGitUser } from '../utils/gitUtils';
 
 export default function planCommand(program: Command): void {
   program
@@ -20,7 +21,13 @@ export default function planCommand(program: Command): void {
         
         // Use options or defaults
         const title = options.title || 'Your Plan Title';
-        const author = options.author || 'ai-guards';
+        
+        // Get author from options, or from git user, or use default
+        let author = options.author;
+        if (!author) {
+          const gitUser = await getGitUser();
+          author = gitUser.name || 'ai-guards';
+        }
         
         // Generate plan ID and date
         const planId = generatePlanId();
