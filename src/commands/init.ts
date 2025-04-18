@@ -8,7 +8,7 @@ import {
   getAvailableTemplates, 
   installTemplate 
 } from '../utils/template-manager';
-import { ensureRegistryExists } from '../utils/registry-manager';
+import { ensureConfigExists } from '../utils/config-manager';
 
 // For testability
 export const errorHandler = (error: Error): never => {
@@ -49,8 +49,8 @@ export default function initCommand(program: Command): void {
           console.log(chalk.green(`Created directory: ${dir}`));
         }
         
-        // Ensure ai-guards.json exists
-        await ensureRegistryExists();
+        // Ensure ai-guards.json exists with unified schema
+        await ensureConfigExists();
         
         // Create sample rule files
         const sampleRule = `---
@@ -185,4 +185,4 @@ async function handleTemplateSelection(): Promise<void> {
   }
   
   console.log(chalk.green('Templates initialized successfully!'));
-} 
+}

@@ -1,99 +1,112 @@
 import { Command } from 'commander';
+import { version } from '../../package.json';
 
-// Use jest.doMock to mock the modules before they're imported 
-jest.doMock('commander', () => {
+// Create mock for Commander
+jest.mock('commander', () => {
   const mockCommand = {
     name: jest.fn().mockReturnThis(),
-    description: jest.fn().mockReturnThis(),
     version: jest.fn().mockReturnThis(),
+    description: jest.fn().mockReturnThis(),
+    option: jest.fn().mockReturnThis(),
+    action: jest.fn().mockReturnThis(),
+    command: jest.fn().mockImplementation(() => {
+      return {
+        description: jest.fn().mockReturnThis(),
+        option: jest.fn().mockReturnThis(),
+        action: jest.fn().mockReturnThis(),
+        command: jest.fn().mockImplementation(() => {
+          return {
+            description: jest.fn().mockReturnThis(),
+            option: jest.fn().mockReturnThis(),
+            action: jest.fn().mockReturnThis(),
+            argument: jest.fn().mockReturnThis()
+          };
+        })
+      };
+    }),
     parse: jest.fn(),
-    outputHelp: jest.fn(),
-    command: jest.fn().mockReturnThis()
+    outputHelp: jest.fn()
   };
-  return { Command: jest.fn(() => mockCommand) };
+
+  return {
+    Command: jest.fn().mockImplementation(() => mockCommand)
+  };
 });
 
-jest.doMock('../commands/init', () => jest.fn());
-jest.doMock('../commands/plan', () => jest.fn());
-jest.doMock('../commands/add', () => jest.fn());
+// Mock command modules
+jest.mock('../commands/init', () => jest.fn());
+jest.mock('../commands/plan', () => jest.fn());
+jest.mock('../commands/add', () => jest.fn());
+jest.mock('../commands/rules', () => jest.fn());
 
-// Mock package.json version
-jest.doMock('../../package.json', () => ({
-  version: '1.0.0'
-}), { virtual: true });
+// Import modules after mocking
+import initCommand from '../commands/init';
+import planCommand from '../commands/plan';
+import addCommand from '../commands/add';
+import rulesCommand from '../commands/rules';
 
 describe('CLI Entry Point', () => {
-  let mockProgram;
-  let initCommand;
-  let planCommand;
-  let addCommand;
-  let originalArgv;
-  
+  let program: any;
+
   beforeEach(() => {
-    // Clear the module cache
-    jest.resetModules();
-    
-    // Save original argv
-    originalArgv = process.argv;
-    
-    // Now import the mocked modules
-    initCommand = require('../commands/init');
-    planCommand = require('../commands/plan');
-    addCommand = require('../commands/add');
-    
-    // Mock CLI arguments
-    process.argv = ['node', 'src/index.js'];
-    
-    // Get the mockProgram from commander
-    mockProgram = new (require('commander').Command)();
-    
-    // Clear mocks for fresh test
     jest.clearAllMocks();
+    // Reinitialize the imported program
+    jest.isolateModules(() => {
+      program = new Command();
+    });
   });
-  
-  afterEach(() => {
+
+  it('should initialize the CLI with correct information', () => {
+    // Import the index module to trigger CLI initialization
+    jest.isolateModules(() => {
+      require('../index');
+    });
+
+    // Verify CLI was set up correctly
+    expect(program.name).toHaveBeenCalledWith('ai-guards');
+    expect(program.description).toHaveBeenCalledWith(
+      'Standardize how teams plan, review, execute, and verify AI‑assisted code'
+    );
+    expect(program.version).toHaveBeenCalledWith(version);
+  });
+
+  it('should register all commands', () => {
+    // Import the index module to trigger command registration
+    jest.isolateModules(() => {
+      require('../index');
+    });
+
+    // Verify all commands were registered
+    expect(initCommand).toHaveBeenCalled();
+    expect(planCommand).toHaveBeenCalled();
+    expect(addCommand).toHaveBeenCalled();
+    expect(rulesCommand).toHaveBeenCalled();
+  });
+
+  it('should parse command line arguments', () => {
+    // Import the index module to trigger CLI initialization
+    jest.isolateModules(() => {
+      require('../index');
+    });
+
+    // Verify parse was called
+    expect(program.parse).toHaveBeenCalledWith(process.argv);
+  });
+
+  it('should output help if no arguments provided', () => {
+    // Mock process.argv to simulate no arguments
+    const originalArgv = process.argv;
+    process.argv = ['node', 'index.js'];
+
+    // Import the index module with mocked argv
+    jest.isolateModules(() => {
+      require('../index');
+    });
+
+    // Verify outputHelp was called
+    expect(program.outputHelp).toHaveBeenCalled();
+
     // Restore original argv
     process.argv = originalArgv;
-  });
-  
-  it('should initialize the CLI with correct information', () => {
-    // Execute the index file
-    require('../index');
-    
-    // Verify program setup
-    expect(mockProgram.name).toHaveBeenCalledWith('ai-guards');
-    expect(mockProgram.description).toHaveBeenCalledWith(
-      expect.stringContaining('Standardize how teams plan, review, execute, and verify')
-    );
-    expect(mockProgram.version).toHaveBeenCalledWith('1.0.0');
-  });
-  
-  it('should register all commands', () => {
-    // Execute the index file
-    require('../index');
-    
-    // Verify commands are registered
-    expect(initCommand).toHaveBeenCalledWith(mockProgram);
-    expect(planCommand).toHaveBeenCalledWith(mockProgram);
-    expect(addCommand).toHaveBeenCalledWith(mockProgram);
-  });
-  
-  it('should parse command line arguments', () => {
-    // Set up mock argv
-    process.argv = ['node', 'src/index.js', 'init'];
-    
-    // Execute the index file
-    require('../index');
-    
-    // Verify parse is called with argv
-    expect(mockProgram.parse).toHaveBeenCalledWith(process.argv);
-  });
-  
-  it('should output help if no arguments provided', () => {
-    // Execute the index file
-    require('../index');
-    
-    // Verify outputHelp is called
-    expect(mockProgram.outputHelp).toHaveBeenCalled();
   });
 }); 

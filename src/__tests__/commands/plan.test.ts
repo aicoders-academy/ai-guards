@@ -2,6 +2,7 @@ import { Command } from 'commander';
 import * as path from 'path';
 import planCommand from '../../commands/plan';
 import { generatePlanId } from '../../utils/idGenerator';
+import { getGitUser } from '../../utils/gitUtils';
 
 // Mock dependencies
 jest.mock('fs-extra', () => ({
@@ -23,6 +24,10 @@ jest.mock('chalk', () => ({
 
 jest.mock('../../utils/idGenerator', () => ({
   generatePlanId: jest.fn()
+}));
+
+jest.mock('../../utils/gitUtils', () => ({
+  getGitUser: jest.fn()
 }));
 
 // Import mocked modules after mocking
@@ -54,6 +59,9 @@ describe('planCommand', () => {
     
     // Mock generatePlanId
     (generatePlanId as jest.Mock).mockReturnValue('plan-123');
+    
+    // Mock getGitUser
+    (getGitUser as jest.Mock).mockResolvedValue({ name: 'vinilana', email: '' });
     
     // Create a new Command instance with a mock action callback
     program = new Command();
@@ -105,7 +113,7 @@ describe('planCommand', () => {
     );
     expect(fs.writeFile).toHaveBeenCalledWith(
       '/fake/path/.ai-guards/plans/plan-123-your-plan-title.md',
-      expect.stringContaining('author: ai-guards')
+      expect.stringContaining('author: vinilana')
     );
     expect(fs.writeFile).toHaveBeenCalledWith(
       '/fake/path/.ai-guards/plans/plan-123-your-plan-title.md',

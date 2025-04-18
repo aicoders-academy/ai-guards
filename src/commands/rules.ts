@@ -2,7 +2,8 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { loadRegistry, syncRegistry, addRule } from '../utils/registry-manager';
+import { syncRegistry, addRule } from '../utils/registry-manager';
+import { loadConfig, RuleMeta } from '../utils/config-manager';
 
 /**
  * Register `ai-guards rules <action>` sub‑commands.
@@ -21,13 +22,15 @@ export default function rulesCommand(program: Command): void {
     .option('--json', 'Output raw JSON')
     .action(async (options) => {
       try {
-        const registry = await loadRegistry();
+        const config = await loadConfig();
+        const rules = config.rules;
+        
         if (options.json) {
-          console.log(JSON.stringify(registry, null, 2));
+          console.log(JSON.stringify({ version: 1, rules }, null, 2));
           return;
         }
 
-        if (registry.rules.length === 0) {
+        if (rules.length === 0) {
           console.log(chalk.yellow('Registry is empty – run "ai-guards rules sync" to populate it.'));
           return;
         }
@@ -35,7 +38,7 @@ export default function rulesCommand(program: Command): void {
         // Basic table output
         console.log(chalk.blue('\nInstalled Rules:'));
         console.table(
-          registry.rules.map(r => ({
+          rules.map(r => ({
             id: r.id,
             type: r.ruleType,
             path: r.path,

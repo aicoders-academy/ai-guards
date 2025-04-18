@@ -1,84 +1,26 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
 import * as glob from 'glob';
-import { z } from 'zod';
+import {
+  updateRule,
+  setRules,
+  ensureConfigExists,
+  RuleMeta
+} from './config-manager';
 
 // ----------------------------
 // Types & Validation Schema
 // ----------------------------
 
+// Export RuleType for use by other modules
 export type RuleType = 'always' | 'auto-attached' | 'agent-requested' | 'manual';
-
-export interface RuleMeta {
-  id: string;               // filename without extension
-  path: string;             // absolute or project‑relative path
-  ruleType: RuleType;       // derived from front‑matter or heuristics
-  description?: string;     // from front‑matter
-  globs?: string[];         // patterns for auto‑attached
-  fileExtensions?: string[];// quick lookup keys
-  alwaysApply?: boolean;    // from front‑matter
-}
-
-export interface RuleRegistry {
-  version: 1;
-  rules: RuleMeta[];
-}
-
-// Zod schema for runtime validation
-const ruleMetaSchema = z.object({
-  id: z.string(),
-  path: z.string(),
-  ruleType: z.enum(['always', 'auto-attached', 'agent-requested', 'manual']),
-  description: z.string().optional(),
-  globs: z.array(z.string()).optional(),
-  fileExtensions: z.array(z.string()).optional(),
-  alwaysApply: z.boolean().optional()
-});
-
-const registrySchema = z.object({
-  version: z.literal(1),
-  rules: z.array(ruleMetaSchema)
-});
 
 // ----------------------------
 // Helper paths
 // ----------------------------
 
-export function getRegistryPath(): string {
-  return path.join(process.cwd(), 'ai-guards.json');
-}
-
 function getRulesDir(): string {
   return path.join(process.cwd(), '.ai-guards', 'rules');
-}
-
-// ----------------------------
-// Core helpers
-// ----------------------------
-
-export async function loadRegistry(): Promise<RuleRegistry> {
-  const registryPath = getRegistryPath();
-  if (!(await fs.pathExists(registryPath))) {
-    // Return default empty registry
-    return { version: 1, rules: [] } as RuleRegistry;
-  }
-
-  try {
-    const json = await fs.readJson(registryPath);
-    const parsed = registrySchema.parse(json); // throws if invalid
-    return parsed;
-  } catch (error) {
-    console.error('Failed to load ai-guards.json – using empty registry', error);
-    return { version: 1, rules: [] } as RuleRegistry;
-  }
-}
-
-export async function saveRegistry(registry: RuleRegistry): Promise<void> {
-  const registryPath = getRegistryPath();
-  // Write atomically – write to tmp then rename
-  const tmpPath = registryPath + '.tmp';
-  await fs.writeJson(tmpPath, registry, { spaces: 2 });
-  await fs.move(tmpPath, registryPath, { overwrite: true });
 }
 
 // ----------------------------
@@ -162,40 +104,35 @@ export async function extractRuleMeta(ruleFilePath: string): Promise<RuleMeta> {
 
 /**
  * Add or update a single rule entry in the registry.
+ * Uses config-manager for storage.
  */
 export async function addRule(ruleFilePath: string): Promise<void> {
-  const registry = await loadRegistry();
   const meta = await extractRuleMeta(ruleFilePath);
-
-  const existingIndex = registry.rules.findIndex(r => r.id === meta.id);
-  if (existingIndex >= 0) {
-    registry.rules[existingIndex] = meta; // Overwrite existing (idempotent)
-  } else {
-    registry.rules.push(meta);
-  }
-  await saveRegistry(registry);
+  await updateRule(meta);
 }
 
 /**
  * Rebuild registry by scanning all rule files under .ai-guards/rules
+ * Uses config-manager for storage.
  */
 export async function syncRegistry(): Promise<void> {
   const ruleFiles = glob.sync('**/*.{md,markdown}', { cwd: getRulesDir(), absolute: true });
-  const registry: RuleRegistry = { version: 1, rules: [] };
+  const rules: RuleMeta[] = [];
+  
   for (const file of ruleFiles) {
     try {
       const meta = await extractRuleMeta(file);
-      registry.rules.push(meta);
+      rules.push(meta);
     } catch (error) {
       console.error(`Failed to parse rule ${file}:`, error);
     }
   }
-  await saveRegistry(registry);
+  
+  await setRules(rules);
 }
 
 // Convenience helper to ensure registry exists (called from init)
+// Uses config-manager's ensureConfigExists function
 export async function ensureRegistryExists(): Promise<void> {
-  const registryPath = getRegistryPath();
-  if (await fs.pathExists(registryPath)) return;
-  await saveRegistry({ version: 1, rules: [] });
+  await ensureConfigExists();
 } 

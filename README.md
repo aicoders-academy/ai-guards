@@ -109,9 +109,12 @@ ai-guards rules sync
 
 ## Rule Registry
 
-AI Guards maintains a registry of all installed rules in `ai-guards.json` at the project root. This registry is automatically created during initialization and updated when rules are added or modified.
+AI Guards maintains a registry of all installed rules and templates in a unified configuration file called `ai-guards.json` at the project root. This file is automatically created during initialization and updated when rules or templates are added, modified, or removed.
 
-### Registry Schema
+### Configuration Schema  
+
+
+The schema uses a unified configuration format that combines rules, templates and other settings into a single file:
 
 ```jsonc
 {
@@ -126,9 +129,26 @@ AI Guards maintains a registry of all installed rules in `ai-guards.json` at the
       "fileExtensions": [".ts"],        // quick lookup key derived from globs
       "alwaysApply": false              // true for 'always' rule type
     }
-  ]
+  ],
+  "templates": {
+    "code-review": {
+      "id": "code-review",
+      "name": "Code Review",
+      "description": "A comprehensive code review prompt",
+      "category": "review",
+      "path": ".ai-guards/templates/code-review.md",
+      "installedAt": "2025-04-28T12:00:00Z",
+      "customized": false
+    }
+  },
+  "config": {
+    "defaultCategory": "guidelines",
+    "customTemplatesPath": null
+  }
 }
 ```
+
+
 
 ### Rule Types
 

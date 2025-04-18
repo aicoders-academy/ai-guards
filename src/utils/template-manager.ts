@@ -1,17 +1,17 @@
 import * as fs from 'fs-extra';
 import * as path from 'path';
+import {
+  loadConfig,
+  updateTemplate,
+  removeTemplate,
+  ensureConfigExists,
+  Template
+} from './config-manager';
 
-// Types
-interface Template {
-  id: string;
-  name: string;
-  description: string;
-  category: string;
-  path: string;
-  installedAt?: string;
-  customized?: boolean;
-}
+// Re-export Template types from config-manager for backward compatibility
+export type { Template };
 
+// Legacy type definitions
 interface TemplateConfig {
   templates: Record<string, Template>;
   config?: {
@@ -47,43 +47,36 @@ export function getTemplatesDir(): string {
 }
 
 /**
- * Get the path to the templates config file
+ * Get the path to the templates config file (legacy)
  */
 export function getTemplatesConfigPath(): string {
   return path.join(getTemplatesDir(), TEMPLATES_CONFIG_FILE);
 }
 
 /**
- * Load the templates config
+ * Load the templates config (now uses unified config)
  */
 export async function loadTemplatesConfig(): Promise<TemplateConfig> {
-  const configPath = getTemplatesConfigPath();
+  const config = await loadConfig();
   
-  if (!await fs.pathExists(configPath)) {
-    return { templates: {} };
-  }
-  
-  try {
-    const config = await fs.readJson(configPath);
-    return config;
-  } catch (error) {
-    console.error('Error loading templates config:', error);
-    return { templates: {} };
-  }
+  // Return in format expected by legacy code
+  return {
+    templates: config.templates,
+    config: config.config
+  };
 }
 
 /**
- * Save the templates config
+ * Save the templates config (now uses unified config)
  */
-export async function saveTemplatesConfig(config: TemplateConfig): Promise<void> {
-  const configPath = getTemplatesConfigPath();
-  
-  try {
-    await fs.writeJson(configPath, config, { spaces: 2 });
-  } catch (error) {
-    console.error('Error saving templates config:', error);
-    throw error;
+export async function saveTemplatesConfig(templateConfig: TemplateConfig): Promise<void> {
+  const cfg = await loadConfig();
+  cfg.templates = templateConfig.templates;
+  if (templateConfig.config) {
+    cfg.config = templateConfig.config;
   }
+  const { saveConfig } = require('./config-manager');
+  await saveConfig(cfg);
 }
 
 /**
@@ -113,7 +106,7 @@ export async function getAvailableTemplates(): Promise<Template[]> {
  * Get a list of all installed templates
  */
 export async function getInstalledTemplates(): Promise<Template[]> {
-  const config = await loadTemplatesConfig();
+  const config = await loadConfig();
   return Object.values(config.templates);
 }
 
@@ -121,12 +114,12 @@ export async function getInstalledTemplates(): Promise<Template[]> {
  * Check if a template is installed
  */
 export async function isTemplateInstalled(templateId: string): Promise<boolean> {
-  const config = await loadTemplatesConfig();
+  const config = await loadConfig();
   return !!config.templates[templateId];
 }
 
 /**
- * Install a template
+ * Install a template (now uses unified config)
  */
 export async function installTemplate(templateId: string): Promise<void> {
   // Get the template from the registry
@@ -138,8 +131,7 @@ export async function installTemplate(templateId: string): Promise<void> {
   }
   
   // Check if template is already installed
-  const config = await loadTemplatesConfig();
-  if (config.templates[templateId]) {
+  if (await isTemplateInstalled(templateId)) {
     throw new Error(`Template "${templateId}" is already installed`);
   }
   
@@ -149,22 +141,20 @@ export async function installTemplate(templateId: string): Promise<void> {
   
   await fs.copy(sourceTemplatePath, destTemplatePath);
   
-  // Update the templates config
-  config.templates[templateId] = {
+  // Update the unified config
+  await updateTemplate({
     ...template,
     installedAt: new Date().toISOString(),
     customized: false
-  };
-  
-  await saveTemplatesConfig(config);
+  });
 }
 
 /**
- * Uninstall a template
+ * Uninstall a template (now uses unified config)
  */
 export async function uninstallTemplate(templateId: string): Promise<void> {
   // Check if template is installed
-  const config = await loadTemplatesConfig();
+  const config = await loadConfig();
   const template = config.templates[templateId];
   
   if (!template) {
@@ -178,9 +168,8 @@ export async function uninstallTemplate(templateId: string): Promise<void> {
     await fs.remove(templatePath);
   }
   
-  // Update the templates config
-  delete config.templates[templateId];
-  await saveTemplatesConfig(config);
+  // Update the unified config
+  await removeTemplate(templateId);
 }
 
 /**
@@ -192,17 +181,14 @@ export async function getTemplateCategories(): Promise<Record<string, { name: st
 }
 
 /**
- * Initialize templates directory and config
+ * Initialize templates directory and config (now uses unified config)
  */
 export async function initTemplates(installAll = false): Promise<void> {
   const templatesDir = getTemplatesDir();
   await fs.ensureDir(templatesDir);
   
-  // Create initial config if it doesn't exist
-  const configPath = getTemplatesConfigPath();
-  if (!await fs.pathExists(configPath)) {
-    await saveTemplatesConfig({ templates: {} });
-  }
+  // Ensure the unified config exists
+  await ensureConfigExists();
   
   // Install all templates if requested
   if (installAll) {

@@ -43,11 +43,18 @@ describe('Template Manager Utilities', () => {
       (fs.pathExists as jest.Mock).mockResolvedValue(false);
       
       const config = await loadTemplatesConfig();
-      expect(config).toEqual({ templates: {} });
+      expect(config).toEqual({ 
+        templates: {},
+        config: {
+          defaultCategory: 'guidelines'
+        }
+      });
     });
 
     it('should load config from file when it exists', async () => {
       const mockConfig = { 
+        version: 1,
+        rules: [],
         templates: { 
           'test-template': { 
             id: 'test-template',
@@ -57,23 +64,53 @@ describe('Template Manager Utilities', () => {
             path: 'test.md',
             installedAt: '2020-01-01T00:00:00.000Z'
           } 
-        } 
+        },
+        config: {
+          defaultCategory: 'guidelines'
+        }
       };
       
       (fs.pathExists as jest.Mock).mockResolvedValue(true);
       (fs.readJson as jest.Mock).mockResolvedValue(mockConfig);
       
       const config = await loadTemplatesConfig();
-      expect(config).toEqual(mockConfig);
+      expect(config).toEqual({
+        templates: mockConfig.templates,
+        config: mockConfig.config
+      });
     });
 
     it('should save config to file', async () => {
-      const mockConfig = { templates: {} };
+      const mockConfig = { 
+        templates: {},
+        config: {
+          defaultCategory: 'guidelines'
+        }
+      };
+      
+      // Mock the loadConfig to return a complete config
+      const mockFullConfig = {
+        version: 1,
+        rules: [],
+        templates: {},
+        config: {
+          defaultCategory: 'guidelines'
+        }
+      };
+      (fs.readJson as jest.Mock).mockResolvedValue(mockFullConfig);
+      
       await saveTemplatesConfig(mockConfig);
       
       expect(fs.writeJson).toHaveBeenCalledWith(
-        '/fake/project/path/.ai-guards/templates/templates.json',
-        mockConfig,
+        '/fake/project/path/ai-guards.json.tmp',
+        {
+          version: 1,
+          rules: [],
+          templates: {},
+          config: {
+            defaultCategory: 'guidelines'
+          }
+        },
         { spaces: 2 }
       );
     });
@@ -109,6 +146,8 @@ describe('Template Manager Utilities', () => {
   describe('Template Operations', () => {
     it('should check if template is installed', async () => {
       const mockConfig = { 
+        version: 1,
+        rules: [],
         templates: { 
           'test-template': { 
             id: 'test-template',
@@ -118,9 +157,13 @@ describe('Template Manager Utilities', () => {
             path: 'test.md',
             installedAt: '2020-01-01T00:00:00.000Z'
           } 
-        } 
+        },
+        config: {
+          defaultCategory: 'guidelines'
+        }
       };
       
+      (fs.pathExists as jest.Mock).mockResolvedValue(true);
       (fs.readJson as jest.Mock).mockResolvedValue(mockConfig);
       
       const isInstalled = await isTemplateInstalled('test-template');
@@ -134,7 +177,7 @@ describe('Template Manager Utilities', () => {
       await initTemplates(false);
       
       expect(fs.ensureDir).toHaveBeenCalledWith('/fake/project/path/.ai-guards/templates');
-      expect(fs.pathExists).toHaveBeenCalledWith('/fake/project/path/.ai-guards/templates/templates.json');
+      expect(fs.pathExists).toHaveBeenCalledWith('/fake/project/path/ai-guards.json');
     });
   });
 }); 
