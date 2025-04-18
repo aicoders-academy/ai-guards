@@ -54,6 +54,114 @@ MIT
 
 ---
 
+## Command Reference
+
+### Initialize Project
+
+```bash
+# Initialize AI Guards in your project
+ai-guards init
+
+# Skip template initialization
+ai-guards init --no-templates
+
+# Select specific templates
+ai-guards init --select-templates
+```
+
+### Manage Plans
+
+```bash
+# Create a new plan
+ai-guards plan
+
+# Create a plan with custom title
+ai-guards plan -t "My custom plan"
+```
+
+### Manage Templates
+
+```bash
+# List available templates
+ai-guards add --list
+
+# Add a specific template
+ai-guards add <template-id>
+```
+
+### Manage Rules
+
+```bash
+# Add a rule file to your project (.md file with front-matter)
+ai-guards rules add <rule-file> --category guidelines
+
+# List all installed rules
+ai-guards rules list
+
+# Format as JSON
+ai-guards rules list --json
+
+# Rebuild registry from rules folder
+ai-guards rules sync
+```
+
+---
+
+## Rule Registry
+
+AI Guards maintains a registry of all installed rules in `ai-guards.json` at the project root. This registry is automatically created during initialization and updated when rules are added or modified.
+
+### Registry Schema
+
+```jsonc
+{
+  "version": 1,
+  "rules": [
+    {
+      "id": "service-naming",           // filename without extension
+      "path": ".ai-guards/rules/guidelines/service-naming.md",
+      "ruleType": "auto-attached",      // always | auto-attached | agent-requested | manual
+      "description": "RPC Service boilerplate", 
+      "globs": ["**/*.ts"],             // patterns for auto-attached rules
+      "fileExtensions": [".ts"],        // quick lookup key derived from globs
+      "alwaysApply": false              // true for 'always' rule type
+    }
+  ]
+}
+```
+
+### Rule Types
+
+| Rule Type         | Description                                                                                   |
+|-------------------|----------------------------------------------------------------------------------------------|
+| **always**        | Always included in the model context.                                                        |
+| **auto-attached** | Included when files matching a glob pattern are referenced.                                  |
+| **agent-requested** | Rule is available to the AI, which decides whether to include it. Must provide a description. |
+| **manual**        | Only included when explicitly mentioned using `@ruleName`.                                   |
+
+### Front Matter
+
+Rule files use front matter to define metadata:
+
+```md
+---
+description: RPC Service boilerplate
+globs: **/*.ts, **/*.js
+alwaysApply: false
+---
+
+- Use our internal RPC pattern when defining services
+- Always use snake_case for service names.
+
+@service-template.ts
+```
+
+- **description**: Description of the rule's purpose
+- **globs**: Comma-separated list of glob patterns for automatic attachment
+- **alwaysApply**: Set to `true` for rules that should always be included
+
+---
+
 #### 1. Purpose  
 Standardize how teams **plan, review, execute, and verify** AI‑assisted code—without locking them into a single IDE or toolchain.
 

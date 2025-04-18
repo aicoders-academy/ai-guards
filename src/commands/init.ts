@@ -8,6 +8,7 @@ import {
   getAvailableTemplates, 
   installTemplate 
 } from '../utils/template-manager';
+import { ensureRegistryExists } from '../utils/registry-manager';
 
 // For testability
 export const errorHandler = (error: Error): never => {
@@ -47,6 +48,9 @@ export default function initCommand(program: Command): void {
           await fs.ensureDir(dir);
           console.log(chalk.green(`Created directory: ${dir}`));
         }
+        
+        // Ensure ai-guards.json exists
+        await ensureRegistryExists();
         
         // Create sample rule files
         const sampleRule = `---
