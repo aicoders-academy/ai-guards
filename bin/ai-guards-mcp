@@ -1,0 +1,27 @@
+#!/usr/bin/env node
+
+const path = require('path');
+const { spawn } = require('child_process');
+
+const serverPath = path.resolve(__dirname, '../dist/mcp/server.mjs');
+
+console.log('Starting AI Guards MCP server...');
+
+// Start the MCP server
+const server = spawn('node', [serverPath], { 
+  stdio: 'inherit',
+  env: { ...process.env }
+});
+
+server.on('close', (code) => {
+  console.log(`MCP server exited with code ${code}`);
+});
+
+// Handle termination signals
+process.on('SIGINT', () => {
+  server.kill('SIGINT');
+});
+
+process.on('SIGTERM', () => {
+  server.kill('SIGTERM');
+}); 
