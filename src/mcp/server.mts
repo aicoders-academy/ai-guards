@@ -8,17 +8,17 @@ import { z } from "zod";
 const execAsync = promisify(exec);
 
 const server = new McpServer({
-  name: "Echo",
-  version: "1.0.0"
+  name: "AI Guards",
+  version: "0.0.2"
 });
 
 server.resource(
-  "echo",
-  new ResourceTemplate("echo://{message}", { list: undefined }),
+  "plan",
+  new ResourceTemplate("plan://{message}", { list: undefined }),
   async (uri, { message }) => ({
     contents: [{
       uri: uri.href,
-      text: `Resource echo: ${message}`
+      text: `Resource plan: ${message}`
     }]
   })
 );
@@ -27,6 +27,7 @@ server.tool(
   { message: z.string() },
   async ({ message }: { message: string }) => {
     try {
+      console.log(`Generating plan for message: ${message}`);
       const { stdout, stderr } = await execAsync(`npx ai-guards plan`);
       if (stderr) {
         return {
@@ -45,47 +46,15 @@ server.tool(
   }
 );
 
-server.tool(
-  "review", 
-  { message: z.string() },
-  async ({ message }: { message: string }) => ({
-    content: [{ type: "text", text: `Tool echo: ${message}` }]
-  })
-);
-
-server.tool(
-  "validate",
-  { message: z.string() },
-  async ({ message }: { message: string }) => ({
-    content: [{ type: "text", text: `Tool echo: ${message}` }]
-  })
-);
-
-server.tool(
-  "execute",
-  { message: z.string() },
-  async ({ message }: { message: string }) => ({
-    content: [{ type: "text", text: `Tool echo: ${message}` }]
-  })
-);
-
-server.tool(
-  "commit",
-  { message: z.string() },
-  async ({ message }: { message: string }) => ({
-    content: [{ type: "text", text: `Tool echo: ${message}` }]
-  })
-);
-
 server.prompt(
-  "echo",
+  "plan-feature",
   { message: z.string() },
   ({ message }) => ({
     messages: [{
       role: "user",
       content: {
         type: "text",
-        text: `Please process this message: ${message}`
+        text: `Please generate a feature development plan for the following message: ${message}`
       }
     }]
   })
