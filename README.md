@@ -1,6 +1,6 @@
-![make vibe coding great again](https://github.com/user-attachments/assets/290b80c9-addf-48ec-8e53-7690f0edb02b)
+ <img src="https://github.com/user-attachments/assets/3a9b389d-ac0c-456e-afd5-6a5a31652075" alt="Alt Text" width="300" >
 
-# AI Guards for vibe coding
+# AI Guards - The framework for AI Driven Development
 
 Standardize how teams **plan, review, execute, and verify** AI‑assisted code—without locking them into a single IDE or toolchain.
 
