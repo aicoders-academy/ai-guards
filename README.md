@@ -7,6 +7,16 @@ Standardize how teams **plan, review, execute, and verify** AIâ€‘assisted codeâ€
  
 ## MCP Integration
 
+
+### Next Steps for MCP Integration
+
+- [ ] Read rules from ai-guards.json to identify which ones should be used
+- [ ] Implement a dedicated documentation page (see [MCP Integration Guide](docs/MCP-INTEGRATION.md) for current details).
+- [ ] Expose AI-Guards rules as MCP resources.
+- [ ] Provide AI-Guards templates as MCP prompt templates.
+- [ ] Implement a way to pull templates and rules from external resources
+- [ ] Create the templates and rules registry
+
 AI-Guards can be integrated with MCP-compatible tools like Cursor, Claude Desktop, and Windsurf using the Model Context Protocol (MCP).
 
 ### Setup in MCP-compatible Tools
