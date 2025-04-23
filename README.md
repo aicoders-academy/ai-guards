@@ -4,6 +4,40 @@
 
 Standardize how teams **plan, review, execute, and verify** AI‑assisted code—without locking them into a single IDE or toolchain.
 
+ 
+## MCP Integration
+
+AI-Guards can be integrated with MCP-compatible tools like Cursor, Claude Desktop, and Windsurf using the Model Context Protocol (MCP).
+
+### Setup in MCP-compatible Tools
+
+Add AI-Guards MCP to your Cursor settings by going to:
+`Settings → Cursor Settings → MCP → Add new global MCP server`
+
+Or manually add this to your MCP configuration file:
+
+```json
+{
+  "mcpServers": {
+    "ai-guards": {
+      "command": "npx",
+      "args": ["-y", "ai-guards-mcp"]
+    }
+  }
+}
+```
+
+### Using AI-Guards MCP
+
+Once integrated, you can access AI-Guards features directly in your AI assistant by mentioning AI-Guards in your prompts:
+
+- "Plan this feature implementation using AI-Guards"
+- "Review this PR with AI-Guards"
+- "Help me implement this feature following AI-Guards standards"
+
+For more details, see [MCP Integration Guide](docs/MCP-INTEGRATION.md).
+
+
 ## Installation
 
 ### Global Installation
@@ -386,39 +420,7 @@ Implement login, logout, and session validation endpoints using JWT.
 | Command            | Action |
 |--------------------|--------|
 | `plan`
-```
-
-## MCP Integration
-
-AI-Guards can be integrated with MCP-compatible tools like Cursor, Claude Desktop, and Windsurf using the Model Context Protocol (MCP).
-
-### Setup in MCP-compatible Tools
-
-Add AI-Guards MCP to your Cursor settings by going to:
-`Settings → Cursor Settings → MCP → Add new global MCP server`
-
-Or manually add this to your MCP configuration file:
-
-```json
-{
-  "mcpServers": {
-    "ai-guards": {
-      "command": "npx",
-      "args": ["-y", "ai-guards-mcp"]
-    }
-  }
-}
-```
-
-### Using AI-Guards MCP
-
-Once integrated, you can access AI-Guards features directly in your AI assistant by mentioning AI-Guards in your prompts:
-
-- "Plan this feature implementation using AI-Guards"
-- "Review this PR with AI-Guards"
-- "Help me implement this feature following AI-Guards standards"
-
-For more details, see [MCP Integration Guide](docs/MCP-INTEGRATION.md).
+ 
 
 ## Testing
 
