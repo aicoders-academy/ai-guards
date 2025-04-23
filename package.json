@@ -1,12 +1,11 @@
 {
   "name": "ai-guards",
-  "version": "0.0.3",
+  "version": "0.0.7",
   "description": "Standardize how teams plan, review, execute, and verify AI‑assisted code",
   "main": "dist/index.js",
   "bin": {
     "ai-guards": "./dist/index.js",
-    "ai-guards-init": "./bin/ai-guards-init",
-    "ai-guards-mcp": "./bin/ai-guards-mcp"
+    "ai-guards-mcp": "./dist/mcp/server.mjs"
   },
   "files": [
     "dist",
@@ -15,7 +14,7 @@
   "scripts": {
     "build": "tsc && cp -r src/templates dist/",
     "start": "node dist/index.js",
-    "mcp": "node dist/mcp/server.js",
+    "mcp": "node dist/mcp/server.mjs",
     "dev": "ts-node src/index.ts",
     "init": "ts-node src/index.ts init",
     "test": "jest",
