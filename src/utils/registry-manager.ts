@@ -34,7 +34,8 @@ interface ParsedFrontMatter {
 }
 
 function parseFrontMatter(content: string): ParsedFrontMatter {
-  const FRONT_MATTER_REGEX = /^---\n([\s\S]*?)\n---/;
+  // Support both Unix and Windows line endings
+  const FRONT_MATTER_REGEX = /^---\r?\n([\s\S]*?)\r?\n---/;
   const match = content.match(FRONT_MATTER_REGEX);
   if (!match) return {};
 
