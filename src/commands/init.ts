@@ -8,7 +8,7 @@ import {
   getAvailableTemplates, 
   installTemplate 
 } from '../utils/template-manager';
-import { ensureConfigExists } from '../utils/config-manager';
+import { DEFAULT_CONFIG } from '../utils/config-manager';
 
 // For testability
 export const errorHandler = (error: Error): never => {
@@ -29,13 +29,14 @@ export default function initCommand(program: Command): void {
     .option('--no-templates', 'Skip template initialization')
     .option('--select-templates', 'Select specific templates to initialize')
     .action(async (options) => {
-      console.log(chalk.blue('Initializing AI Guards...'));
+      console.log(chalk.blue('Initializing AI Guards in the current directory...'));
       
       try {
-        // Create base directory structure
-        const aiGuardsDir = path.join(process.cwd(), '.ai-guards');
-        
-        // Create directories
+        const projectRoot = process.cwd(); // Explicitly define project root for init
+        const aiGuardsDir = path.join(projectRoot, '.ai-guards');
+        const configPath = path.join(projectRoot, 'ai-guards.json');
+
+        // Create .ai-guards directory and subdirectories
         const directories = [
           path.join(aiGuardsDir, 'rules', 'guidelines'),
           path.join(aiGuardsDir, 'rules', 'security'),
@@ -48,9 +49,14 @@ export default function initCommand(program: Command): void {
           await fs.ensureDir(dir);
           console.log(chalk.green(`Created directory: ${dir}`));
         }
-        
-        // Ensure ai-guards.json exists with unified schema
-        await ensureConfigExists();
+
+        // Handle ai-guards.json creation
+        if (!(await fs.pathExists(configPath))) {
+          await fs.writeJson(configPath, DEFAULT_CONFIG, { spaces: 2 });
+          console.log(chalk.green(`Created configuration file: ${configPath}`));
+        } else {
+          console.log(chalk.yellow(`Configuration file already exists: ${configPath}`));
+        }
         
         // Create sample rule files
         const sampleRule = `---
@@ -116,7 +122,8 @@ alwaysApply: false
         }
         
         console.log(chalk.green('AI Guards initialized successfully!'));
-        console.log(chalk.blue('Directory structure created at .ai-guards/'));
+        console.log(chalk.blue(`Directory structure created at ${aiGuardsDir}`));
+        console.log(chalk.blue(`Configuration file created at ${configPath}`));
         console.log(chalk.blue('You can add more templates later with:'));
         console.log(chalk.white('  ai-guards add <template-name>'));
       } catch (error) {
