@@ -4,6 +4,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { generatePlanId } from '../utils/idGenerator';
 import { getGitUser } from '../utils/gitUtils';
+import { getAiGuardsDir } from '../utils/config-manager';
 
 export default function planCommand(program: Command): void {
   program
@@ -13,7 +14,7 @@ export default function planCommand(program: Command): void {
     .option('-a, --author <author>', 'Author of the plan')
     .action(async (options) => {
       try {
-        const aiGuardsDir = path.join(process.cwd(), '.ai-guards');
+        const aiGuardsDir = await getAiGuardsDir();
         const plansDir = path.join(aiGuardsDir, 'plans');
         
         // Ensure plans directory exists

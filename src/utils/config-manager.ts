@@ -78,8 +78,14 @@ const configSchema = z.object({
 // Paths & Defaults
 // ----------------------------
 
-export function getConfigPath(): string {
-  return path.join(process.cwd(), 'ai-guards.json');
+export async function getConfigPath(): Promise<string> {
+  const projectRoot = await findProjectRoot();
+  return path.join(projectRoot, 'ai-guards.json');
+}
+
+export async function getAiGuardsDir(): Promise<string> {
+  const projectRoot = await findProjectRoot();
+  return path.join(projectRoot, '.ai-guards');
 }
 
 const DEFAULT_CONFIG: UnifiedConfig = {
@@ -101,7 +107,7 @@ const DEFAULT_CONFIG: UnifiedConfig = {
  * - Verifies schema and defaults to empty if invalid
  */
 export async function loadConfig(): Promise<UnifiedConfig> {
-  const configPath = getConfigPath();
+  const configPath = await getConfigPath();
   if (!(await fs.pathExists(configPath))) {
     return DEFAULT_CONFIG;
   }
@@ -121,17 +127,47 @@ export async function loadConfig(): Promise<UnifiedConfig> {
  */
 export async function saveConfig(config: UnifiedConfig): Promise<void> {
   const cfg: UnifiedConfig = { ...config, version: 1 };
-  const tmp = getConfigPath() + '.tmp';
+  const configPath = await getConfigPath();
+  const tmp = configPath + '.tmp';
   await fs.writeJson(tmp, cfg, { spaces: 2 });
-  await fs.move(tmp, getConfigPath(), { overwrite: true });
+  await fs.move(tmp, configPath, { overwrite: true });
 }
 
 /**
  * Ensure a config file exists with at least empty collections
  */
 export async function ensureConfigExists(): Promise<void> {
-  if (!(await fs.pathExists(getConfigPath()))) {
+  if (!(await fs.pathExists(await getConfigPath()))) {
     await saveConfig(DEFAULT_CONFIG);
+  }
+}
+
+/**
+ * Finds the project root by searching upwards from the current working directory
+ * for an `ai-guards.json` file or a `.ai-guards` directory.
+ * @returns The path to the project root.
+ * @throws Error if the project root is not found.
+ */
+export async function findProjectRoot(): Promise<string> {
+  let currentDir = process.cwd();
+
+  while (true) {
+    const configFileExists = await fs.pathExists(path.join(currentDir, 'ai-guards.json'));
+    if (configFileExists) {
+      return currentDir;
+    }
+
+    const aiGuardsDirExists = await fs.pathExists(path.join(currentDir, '.ai-guards'));
+    if (aiGuardsDirExists) {
+      return currentDir;
+    }
+
+    const parentDir = path.dirname(currentDir);
+    if (parentDir === currentDir) {
+      // Reached the root of the filesystem
+      throw new Error('AI Guards project root not found.');
+    }
+    currentDir = parentDir;
   }
 }
 
