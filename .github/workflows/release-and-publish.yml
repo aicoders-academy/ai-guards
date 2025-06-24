@@ -1,0 +1,93 @@
+name: Release and Publish
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release-and-publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # For creating releases
+      id-token: write      # For npm provenance
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for better release notes
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run tests
+        run: npm test
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/}
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "CLEAN_VERSION=${VERSION#v}" >> $GITHUB_OUTPUT
+      
+      - name: Verify package.json version matches tag
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${{ steps.get_version.outputs.CLEAN_VERSION }}"
+          if [ "$PACKAGE_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Package version ($PACKAGE_VERSION) does not match tag version ($TAG_VERSION)"
+            exit 1
+          fi
+      
+      - name: Check npm token
+        run: |
+          if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
+            echo "::error::NPM_TOKEN secret is not set. Please add it to repository secrets."
+            exit 1
+          fi
+      
+      - name: Publish to npm with provenance
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      
+      - name: Generate release notes
+        run: |
+          cat << EOF > release_notes.md
+          ## AI Guards ${{ steps.get_version.outputs.VERSION }}
+          
+          ### 🚀 What's New
+          Check out the latest features and improvements in this release.
+          
+          ### 📦 Installation
+          \`\`\`bash
+          npm install -g ai-guards@${{ steps.get_version.outputs.CLEAN_VERSION }}
+          \`\`\`
+          
+          ### 🔗 Quick Links
+          - [npm package](https://www.npmjs.com/package/ai-guards/v/${{ steps.get_version.outputs.CLEAN_VERSION }})
+          - [Documentation](https://github.com/${{ github.repository }}/tree/${{ steps.get_version.outputs.VERSION }}/docs)
+          - [MCP Integration Guide](https://github.com/${{ github.repository }}/blob/${{ steps.get_version.outputs.VERSION }}/docs/MCP-INTEGRATION.md)
+          
+          ### 🤝 Contributing
+          See [CONTRIBUTING.md](https://github.com/${{ github.repository }}/blob/${{ steps.get_version.outputs.VERSION }}/CONTRIBUTING.md) for guidelines.
+          EOF
+      
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.get_version.outputs.VERSION }} \
+            --title "AI Guards ${{ steps.get_version.outputs.VERSION }}" \
+            --notes-file release_notes.md \
+            --verify-tag

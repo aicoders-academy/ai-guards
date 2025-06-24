@@ -1,0 +1,57 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for changelog generation
+      
+      - name: Extract version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      - name: Generate release notes
+        id: release_notes
+        run: |
+          cat << EOF > release_notes.md
+          ## AI Guards ${{ steps.get_version.outputs.VERSION }}
+          
+          ### 🚀 Features
+          - Improved MCP server with automatic project detection
+          - Added more MCP tools (init, add-template, list-rules)
+          - Enhanced error handling and user feedback
+          
+          ### 🐛 Bug Fixes
+          - Fixed MCP connection not recognizing ai-guards folder
+          
+          ### 📚 Documentation
+          - Updated MCP integration documentation with troubleshooting guide
+          
+          ### 📦 Installation
+          \`\`\`bash
+          npm install -g ai-guards@${{ steps.get_version.outputs.VERSION }}
+          \`\`\`
+          
+          ### 🔗 Links
+          - [npm package](https://www.npmjs.com/package/ai-guards/v/${{ steps.get_version.outputs.VERSION }})
+          - [Documentation](https://github.com/${{ github.repository }}/tree/${{ steps.get_version.outputs.VERSION }}/docs)
+          EOF
+      
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create ${{ steps.get_version.outputs.VERSION }} \
+            --title "Release ${{ steps.get_version.outputs.VERSION }}" \
+            --notes-file release_notes.md \
+            --verify-tag

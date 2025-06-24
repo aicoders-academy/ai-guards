@@ -137,6 +137,10 @@ This will generate coverage reports in the `coverage/` directory.
 3. Push your branch and create a pull request
 4. Describe your changes in the pull request
 
+## Release Process
+
+For maintainers who need to release new versions, please refer to [RELEASE.md](RELEASE.md) for detailed instructions on the automated release process.
+
 ## License
 
 By contributing to AI Guards, you agree that your contributions will be licensed under the project's license. 
