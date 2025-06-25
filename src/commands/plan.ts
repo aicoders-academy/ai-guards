@@ -4,6 +4,7 @@ import * as path from 'path';
 import chalk from 'chalk';
 import { generatePlanId } from '../utils/idGenerator';
 import { getGitUser } from '../utils/gitUtils';
+import { findPlansDirectory } from '../utils/plansUtils';
 
 export default function planCommand(program: Command): void {
   program
@@ -13,10 +14,15 @@ export default function planCommand(program: Command): void {
     .option('-a, --author <author>', 'Author of the plan')
     .action(async (options) => {
       try {
-        const aiGuardsDir = path.join(process.cwd(), '.ai-guards');
-        const plansDir = path.join(aiGuardsDir, 'plans');
+        // Find the plans directory (supports both .plans and .ai-guards/plans)
+        const plansDir = await findPlansDirectory();
         
-        // Ensure plans directory exists
+        if (!plansDir) {
+          console.error(chalk.red('Error: AI Guards not initialized. Run ') + chalk.cyan('ai-guards init') + chalk.red(' first.'));
+          process.exit(1);
+        }
+        
+        // Ensure plans directory exists (in case it was deleted)
         await fs.ensureDir(plansDir);
         
         // Use options or defaults

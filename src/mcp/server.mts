@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { exec } from "child_process";
 import { promisify } from "util";
@@ -11,12 +11,18 @@ import { z } from "zod";
 
 const execAsync = promisify(exec);
 
-// Function to find the project root by looking for .ai-guards directory
+// Function to find the project root by looking for plans directory
 function findProjectRoot(startPath: string = process.cwd()): string | null {
   let currentPath = startPath;
   
   // Check up to 10 parent directories
   for (let i = 0; i < 10; i++) {
+    // Check for new format (.plans)
+    if (existsSync(join(currentPath, '.plans'))) {
+      return currentPath;
+    }
+    
+    // Check for legacy format (.ai-guards)
     if (existsSync(join(currentPath, '.ai-guards'))) {
       return currentPath;
     }
@@ -29,42 +35,22 @@ function findProjectRoot(startPath: string = process.cwd()): string | null {
     currentPath = parentPath;
   }
   
-  // If not found, check if ai-guards.json exists (for uninitialized projects)
-  currentPath = startPath;
-  for (let i = 0; i < 10; i++) {
-    if (existsSync(join(currentPath, 'ai-guards.json'))) {
-      return currentPath;
-    }
-    
-    const parentPath = dirname(currentPath);
-    if (parentPath === currentPath) {
-      break;
-    }
-    currentPath = parentPath;
-  }
-  
   return null;
 }
 
 const server = new McpServer({
-  name: "AI Guards",
-  version: "0.0.8"
+  name: "AI Guards - Feature Planning",
+  version: "0.1.0",
+  description: "AI-powered feature planning tool"
 });
-
-server.resource(
-  "plan",
-  new ResourceTemplate("plan://{message}", { list: undefined }),
-  async (uri, { message }) => ({
-    contents: [{
-      uri: uri.href,
-      text: `Resource plan: ${message}`
-    }]
-  })
-);
+// Tool: Create a new feature plan
 server.tool(
-  "plan",
-  { message: z.string() },
-  async ({ message }: { message: string }) => {
+  "create-plan",
+  { 
+    title: z.string().describe("Title for the feature plan"),
+    author: z.string().optional().describe("Author name (optional, uses git user by default)")
+  },
+  async ({ title, author }) => {
     try {
       const projectRoot = findProjectRoot();
       
@@ -72,23 +58,28 @@ server.tool(
         return {
           content: [{ 
             type: "text", 
-            text: "Error: Could not find AI Guards project. Make sure you're in a project with .ai-guards directory or ai-guards.json file." 
+            text: "Error: Could not find AI Guards project. Run 'ai-guards init' first." 
           }]
         };
       }
       
-      console.log(`Generating plan for message: ${message} in directory: ${projectRoot}`);
+      let command = `npx ai-guards plan --title "${title}"`;
+      if (author) {
+        command += ` --author "${author}"`;
+      }
       
-      // Execute the command in the project root directory
-      const { stdout, stderr } = await execAsync(`npx ai-guards plan`, {
+      console.log(`Creating plan in directory: ${projectRoot}`);
+      
+      const { stdout, stderr } = await execAsync(command, {
         cwd: projectRoot
       });
       
-      if (stderr) {
+      if (stderr && !stderr.includes('ExperimentalWarning')) {
         return {
           content: [{ type: "text", text: `Error: ${stderr}` }]
         };
       }
+      
       return {
         content: [{ type: "text", text: stdout }]
       };
@@ -101,37 +92,33 @@ server.tool(
   }
 );
 
-// Initialize AI Guards in a project
+// Tool: Initialize AI Guards project
 server.tool(
   "init",
   { 
-    templates: z.boolean().optional(),
-    selectTemplates: z.boolean().optional() 
+    folder: z.string().optional().describe("Folder name for plans (default: .plans)")
   },
-  async ({ templates, selectTemplates }) => {
+  async ({ folder }) => {
     try {
-      const projectRoot = findProjectRoot() || process.cwd();
+      const currentDir = process.cwd();
       
       let command = "npx ai-guards init";
-      if (templates === false) {
-        command += " --no-templates";
-      } else if (selectTemplates) {
-        command += " --select-templates";
-      } else if (templates === true) {
-        command += " --templates";
+      if (folder) {
+        command += ` --folder "${folder}"`;
       }
       
-      console.log(`Initializing AI Guards in directory: ${projectRoot}`);
+      console.log(`Initializing AI Guards in directory: ${currentDir}`);
       
       const { stdout, stderr } = await execAsync(command, {
-        cwd: projectRoot
+        cwd: currentDir
       });
       
-      if (stderr) {
+      if (stderr && !stderr.includes('ExperimentalWarning')) {
         return {
           content: [{ type: "text", text: `Error: ${stderr}` }]
         };
       }
+      
       return {
         content: [{ type: "text", text: stdout }]
       };
@@ -144,110 +131,25 @@ server.tool(
   }
 );
 
-// Add a template to the project
-server.tool(
-  "add-template",
-  { 
-    templateId: z.string().optional(),
-    list: z.boolean().optional() 
-  },
-  async ({ templateId, list }) => {
-    try {
-      const projectRoot = findProjectRoot();
-      
-      if (!projectRoot) {
-        return {
-          content: [{ 
-            type: "text", 
-            text: "Error: Could not find AI Guards project. Make sure you're in a project with .ai-guards directory or ai-guards.json file." 
-          }]
-        };
-      }
-      
-      let command = "npx ai-guards add";
-      if (list) {
-        command += " --list";
-      } else if (templateId) {
-        command += ` ${templateId}`;
-      }
-      
-      console.log(`Running command: ${command} in directory: ${projectRoot}`);
-      
-      const { stdout, stderr } = await execAsync(command, {
-        cwd: projectRoot
-      });
-      
-      if (stderr) {
-        return {
-          content: [{ type: "text", text: `Error: ${stderr}` }]
-        };
-      }
-      return {
-        content: [{ type: "text", text: stdout }]
-      };
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        content: [{ type: "text", text: `Error executing command: ${errorMessage}` }]
-      };
-    }
-  }
-);
-
-// List rules
-server.tool(
-  "list-rules",
-  { json: z.boolean().optional() },
-  async ({ json }) => {
-    try {
-      const projectRoot = findProjectRoot();
-      
-      if (!projectRoot) {
-        return {
-          content: [{ 
-            type: "text", 
-            text: "Error: Could not find AI Guards project. Make sure you're in a project with .ai-guards directory or ai-guards.json file." 
-          }]
-        };
-      }
-      
-      let command = "npx ai-guards rules list";
-      if (json) {
-        command += " --json";
-      }
-      
-      console.log(`Listing rules in directory: ${projectRoot}`);
-      
-      const { stdout, stderr } = await execAsync(command, {
-        cwd: projectRoot
-      });
-      
-      if (stderr) {
-        return {
-          content: [{ type: "text", text: `Error: ${stderr}` }]
-        };
-      }
-      return {
-        content: [{ type: "text", text: stdout }]
-      };
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      return {
-        content: [{ type: "text", text: `Error executing command: ${errorMessage}` }]
-      };
-    }
-  }
-);
-
+// Prompt: Guide for creating a feature plan
 server.prompt(
   "plan-feature",
-  { message: z.string() },
-  ({ message }) => ({
+  { feature: z.string().describe("Feature description") },
+  ({ feature }) => ({
     messages: [{
       role: "user",
       content: {
         type: "text",
-        text: `Please generate a feature development plan for the following message: ${message}`
+        text: `I need to plan the following feature: ${feature}
+
+Please help me create a comprehensive development plan that includes:
+1. Scope definition
+2. Functional requirements
+3. Non-functional requirements (performance, security, etc.)
+4. Technical approach and architecture
+5. Implementation steps
+6. Testing strategy
+7. Potential risks and mitigations`
       }
     }]
   })
