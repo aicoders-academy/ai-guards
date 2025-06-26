@@ -36,14 +36,10 @@ jest.mock('commander', () => {
 // Mock command modules
 jest.mock('../commands/init', () => jest.fn());
 jest.mock('../commands/plan', () => jest.fn());
-jest.mock('../commands/add', () => jest.fn());
-jest.mock('../commands/rules', () => jest.fn());
 
 // Import modules after mocking
 import initCommand from '../commands/init';
 import planCommand from '../commands/plan';
-import addCommand from '../commands/add';
-import rulesCommand from '../commands/rules';
 
 describe('CLI Entry Point', () => {
   let program: any;
@@ -65,7 +61,7 @@ describe('CLI Entry Point', () => {
     // Verify CLI was set up correctly
     expect(program.name).toHaveBeenCalledWith('ai-guards');
     expect(program.description).toHaveBeenCalledWith(
-      'Standardize how teams plan, review, execute, and verify AI‑assisted code'
+      'AI-powered feature planning tool with MCP integration'
     );
     expect(program.version).toHaveBeenCalledWith(version);
   });
@@ -79,8 +75,6 @@ describe('CLI Entry Point', () => {
     // Verify all commands were registered
     expect(initCommand).toHaveBeenCalled();
     expect(planCommand).toHaveBeenCalled();
-    expect(addCommand).toHaveBeenCalled();
-    expect(rulesCommand).toHaveBeenCalled();
   });
 
   it('should parse command line arguments', () => {

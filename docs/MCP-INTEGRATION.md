@@ -1,6 +1,6 @@
 # Integrating AI-Guards MCP in Your Tools
 
-The AI-Guards Model Context Protocol (MCP) server allows you to integrate AI-Guards capabilities directly into compatible AI assistants like Cursor, Claude Desktop, Windsurf, and other MCP-enabled tools. This integration enables AI assistants to access and use AI-Guards features for planning, reviewing, and managing AI-assisted coding workflows.
+The AI-Guards Model Context Protocol (MCP) server allows you to integrate AI-Guards feature planning capabilities directly into compatible AI assistants like Cursor, Claude Desktop, Windsurf, and other MCP-enabled tools. This integration enables AI assistants to create structured development plans for your features and projects.
 
 ## What is Model Context Protocol (MCP)?
 
@@ -76,19 +76,14 @@ The assistant will automatically connect to AI-Guards and apply the appropriate 
 
 AI-Guards MCP provides the following capabilities to AI assistants:
 
-1. **Plan Generation**: Create structured development plans for features or tasks
-   - `plan`: Generate a new AI plan template with customizable title and author
+1. **Project Initialization**: Set up AI-Guards in new or existing projects
+   - `init`: Initialize AI-Guards project structure
 
-2. **Project Initialization**: Set up AI-Guards in new or existing projects
-   - `init`: Initialize AI-Guards with options for template selection
+2. **Plan Creation**: Create structured development plans for features or tasks
+   - `create-plan`: Generate a new feature plan with customizable title and author
+   - `plan-feature`: Prompt template for comprehensive feature planning guidance
 
-3. **Template Management**: Add and manage prompt templates
-   - `add-template`: Add specific templates or list available ones
-
-4. **Rules Management**: View and manage coding rules
-   - `list-rules`: List all installed rules with optional JSON output
-
-5. **Automatic Project Detection**: The MCP server automatically finds your project root by looking for `.ai-guards` directory or `ai-guards.json` file
+3. **Automatic Project Detection**: The MCP server automatically finds your project root by looking for `.ai-guards` directory
 
 ## Benefits of MCP Integration
 

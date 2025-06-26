@@ -1,7 +1,7 @@
 {
   "name": "ai-guards",
-  "version": "0.0.8",
-  "description": "Standardize how teams plan, review, execute, and verify AI‑assisted code",
+  "version": "0.2.0",
+  "description": "AI-powered feature planning tool with MCP integration",
   "main": "dist/index.js",
   "bin": {
     "ai-guards": "./dist/index.js",
@@ -12,7 +12,7 @@
     "bin"
   ],
   "scripts": {
-    "build": "tsc && cp -r src/templates dist/",
+    "build": "tsc",
     "start": "node dist/index.js",
     "mcp": "node dist/mcp/server.mjs",
     "dev": "ts-node src/index.ts",
@@ -23,10 +23,10 @@
   },
   "keywords": [
     "ai",
-    "code",
-    "quality",
-    "standards",
-    "workflow"
+    "planning",
+    "feature",
+    "mcp",
+    "development"
   ],
   "author": "Vinicius Lana",
   "license": "MIT",
@@ -46,15 +46,11 @@
     "chalk": "^4.1.2",
     "commander": "^13.1.0",
     "fs-extra": "^11.3.0",
-    "glob": "^11.0.1",
-    "inquirer": "^12.5.2",
     "typescript": "^5.8.3",
     "zod": "^3.24.3"
   },
   "devDependencies": {
     "@types/fs-extra": "^11.0.4",
-    "@types/glob": "^8.1.0",
-    "@types/inquirer": "^9.0.7",
     "@types/jest": "^29.5.12",
     "@types/node": "^22.14.1",
     "jest": "^29.7.0",
